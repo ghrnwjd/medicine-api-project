@@ -8,11 +8,13 @@ import org.springframework.stereotype.Component;
 @Data
 public class ApiKey {
 
-    @Value("${medicine.api.encoding-key}")
-    private String encodingKey;
+    @Value("${api.medicine.encoding-key}")
+    private String medicineEncodingKey;
 
-    @Value("${medicine.api.decoding-key}")
-    private String decodingKey;
+    @Value("${api.medicine.decoding-key}")
+    private String medicineDecodingKey;
 
+    @Value("${api.chatGPT.key}")
+    private String chatGPTkey;
 }
 
