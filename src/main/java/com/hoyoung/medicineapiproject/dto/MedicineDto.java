@@ -11,15 +11,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicineDto {
+
     private String resultCode; // 결과코드
     private String resultMsg; // 결과메시지
     private String numOfRows; // 한 페이지 결과 수
-    private String pageNo; // 페이지번호
+    private String pageNo; // 페이지번호 --
     private String totalCount; // 전체 결과 수
-    private String entpName; // 업체명
-    private String itemName; // 제품명
-    private String itemSeq; // 품목기준코드
-    private String efcyQesitm; // 이 약의 효능은 무엇입니까?
+    private String entpName; // 업체명 --
+    private String itemName; // 제품명 --
+    private String itemSeq; // 품목기준코드 --
+    private String efcyQesitm; // 이 약의 효능은 무엇입니까? --
     private String useMethodQesitm; // 이 약은 어떻게 사용합니까?
     private String atpnWarnQesitm; // 이 약을 사용하기 전에 반드시 알아야 할 내용은 무엇입니까?
     private String atpnQesitm; // 이 약의 사용상 주의사항은 무엇입니까?

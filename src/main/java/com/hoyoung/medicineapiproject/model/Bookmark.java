@@ -27,6 +27,7 @@ public class Bookmark {
 
     @Column
     private BookmarkType bookmarkType5;
+
     @ManyToOne
     @JoinColumn(name="userId", nullable = false)
     private User user;

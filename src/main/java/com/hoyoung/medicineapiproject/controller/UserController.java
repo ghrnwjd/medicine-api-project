@@ -46,4 +46,10 @@ public class UserController {
         return medicineService.getMedicineResponseString(medicineDto);
     }
 
+    @GetMapping("/input/{itemName}")
+    public @ResponseBody MedicineDto recommendMedicineInputByUser(@PathVariable String itemName) throws IOException {
+
+        return medicineService.recommendMedicineByInput(itemName);
+    }
+
 }

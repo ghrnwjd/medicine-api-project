@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseDto {
+public class ResponseDto{
 
     private ResponseStatus responseStatus;
+
 }
