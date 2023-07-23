@@ -4,12 +4,13 @@ import com.hoyoung.medicineapiproject.component.ApiKey;
 import com.hoyoung.medicineapiproject.dto.MedicineDto;
 import com.hoyoung.medicineapiproject.dto.ResponseDto;
 import com.hoyoung.medicineapiproject.dto.ResponseStatus;
+import com.hoyoung.medicineapiproject.model.Medicine;
+import com.hoyoung.medicineapiproject.repository.MedicineRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -21,8 +22,11 @@ public class MedicineService {
     private static final String PATH = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList";
     private ApiKey apiKey;
 
-    public MedicineService(ApiKey apiKey) {
+    private final MedicineRepository medicineRepository;
+
+    public MedicineService(ApiKey apiKey, MedicineRepository medicineRepository) {
         this.apiKey = apiKey;
+        this.medicineRepository = medicineRepository;
     }
 
 
@@ -87,7 +91,7 @@ public class MedicineService {
         while ((line = rd.readLine()) != null) {
 
             if(line.startsWith("<resultCode>")) {
-               resultCode = regexLine(line);
+                resultCode = regexLine(line);
             }
             else if(line.startsWith("<resultMsg>")) {
                 resultMsg = regexLine(line);
@@ -237,6 +241,117 @@ public class MedicineService {
     public MedicineDto recommendMedicineByInput(String medicineName) throws IOException {
 
         return getMedicineResponse(MedicineDto.builder().itemName(medicineName).build());
+    }
+
+    public void saveMedicine() throws IOException {
+        BufferedReader rd = null;
+        HttpURLConnection conn = null;
+        for(int pageNo = 1; pageNo <= 500; pageNo++) {
+            StringBuilder urlBuilder = new StringBuilder(PATH); /*URL*/
+            urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + apiKey.getMedicineEncodingKey()); /*Service Key*/
+            urlBuilder.append("&" + URLEncoder.encode("pageNo","UTF-8") + "=" + URLEncoder.encode(String.valueOf(pageNo), "UTF-8")); /*페이지번호*/
+            urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*한 페이지 결과 수*/
+
+            URL url = new URL(urlBuilder.toString());
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Content-type", "application/json");
+            System.out.println("Response code: " + conn.getResponseCode());
+
+            if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } else {
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            }
+            String line;
+
+            String resultCode = null, resultMsg = null, numOfRows = null,tempPageNo = null, totalCount = null, entpName = null, itemName = null,
+                    itemSeq = null, efcyQesitm = null, useMethodQesitm = null, atpnWarnQesitm = null, atpnQesitm = null, intrcQesitm = null,
+                    seQesitm = null, depositMethodQesitm = null, openDe = null, updateDe = null, itemImage = null;
+
+            MedicineDto newMedicineDto = new MedicineDto();
+
+            // 한개밖에 못받아온다는 단점이 존재.
+            while ((line = rd.readLine()) != null) {
+
+                if(line.startsWith("<resultCode>")) {
+                    resultCode = regexLine(line);
+                }
+                else if(line.startsWith("<resultMsg>")) {
+                    resultMsg = regexLine(line);
+                }
+                else if(line.startsWith("<numOfRows>")) {
+                    numOfRows = regexLine(line);
+                }
+                else if(line.startsWith("<pageNo>")) {
+                    tempPageNo = regexLine(line);
+                }
+                else if(line.startsWith("<totalCount>")) {
+                    totalCount = regexLine(line);
+                }
+                else if(line.startsWith("<entpName>")) {
+                    entpName = regexLine(line);
+                }
+                else if(line.startsWith("<itemName>")) {
+                    itemName = regexLine(line);
+                }
+                else if(line.startsWith("<itemSeq>")) {
+                    itemSeq = regexLine(line);
+                }
+                else if(line.startsWith("<efcyQesitm>")) {
+                    efcyQesitm = regexLine(line);
+                }
+                if(line.startsWith("<useMethodQesitm>")) {
+                    useMethodQesitm = regexLine(line);
+                }
+                else if(line.startsWith("<atpnWarnQesitm>")) {
+                    atpnWarnQesitm = regexLine(line);
+                }
+                else if(line.startsWith("<atpnQesitm>")) {
+                    atpnQesitm = regexLine(line);
+                }
+                else if(line.startsWith("<intrcQesitm>")) {
+                    intrcQesitm = regexLine(line);
+                }
+                else if(line.startsWith("<seQesitm>")) {
+                    seQesitm = regexLine(line);
+                }
+                else if(line.startsWith("<depositMethodQesitm>")) {
+                    depositMethodQesitm = regexLine(line);
+                }
+                else if(line.startsWith("<openDe>")) {
+                    openDe = regexLine(line);
+                }
+                else if(line.startsWith("<updateDe>")) {
+                    updateDe = regexLine(line);
+                }
+                else if(line.startsWith("<itemImage>")) {
+                    itemImage = regexLine(line);
+                }
+            }
+
+            medicineRepository.save(Medicine.builder()
+                            .itemName(itemName)
+                            .itemSeq(itemSeq)
+                            .entpName(entpName)
+                            .atpnWarnQesitm(atpnWarnQesitm)
+                            .atpnQesitm(atpnQesitm)
+                            .seQesitm(seQesitm)
+                            .intrcQesitm(intrcQesitm)
+                            .depositMethodQesitm(depositMethodQesitm)
+                            .build());
+
+            System.out.println("저장 : " + pageNo);
+
+        }
+
+        rd.close();
+        conn.disconnect();
+        rd.close();
+        conn.disconnect();
+
+
+
     }
 
 }

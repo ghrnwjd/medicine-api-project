@@ -52,4 +52,9 @@ public class UserController {
         return medicineService.recommendMedicineByInput(itemName);
     }
 
+    @GetMapping("/save")
+    public void saveMedicine() throws IOException {
+        medicineService.saveMedicine();
+    }
+
 }
